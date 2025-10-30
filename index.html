@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Site Under Maintenance</title>
+  <meta name="description" content="We'll be back soon — the site is under maintenance." />
+  <style>
+    :root{--bg:#0f1724;--accent:#6ee7b7;--muted:#9aa7b6}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
+    body{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--bg);
+      color:#e6f0f6;
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* Canvas animation background */
+    canvas#bgCanvas {
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      z-index:-1;
+      background:linear-gradient(180deg,#071021 0%,var(--bg) 100%);
+    }
+
+    .card{
+      width:100%;max-width:980px;
+      background:rgba(255,255,255,0.02);
+      border-radius:18px;padding:36px;
+      box-shadow:0 10px 30px rgba(2,6,23,0.6);
+      display:grid;grid-template-columns:1fr 320px;
+      gap:24px;align-items:center;
+      backdrop-filter:blur(10px);
+    }
+
+    .brand{display:flex;gap:16px;align-items:center}
+    .logo{
+      width:68px;height:68px;border-radius:14px;
+      background:linear-gradient(135deg,var(--accent),#60a5fa);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;color:#052022;font-size:24px;
+      box-shadow:0 6px 18px rgba(8,20,30,0.6)
+    }
+    h1{margin:0;font-size:28px}
+    p.lead{margin:12px 0 0;color:var(--muted);font-size:15px}
+    .meta{margin-top:18px;color:var(--muted);font-size:14px}
+    .actions{margin-top:20px;display:flex;gap:12px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .btn-primary{background:transparent;outline:2px solid rgba(110,231,183,0.12);}
+    .btn-muted{background:transparent;color:var(--muted)}
+    .right{
+      background:linear-gradient(180deg,rgba(255,255,255,0.015),transparent);
+      padding:18px;border-radius:12px;text-align:center
+    }
+    .countdown{font-size:40px;font-weight:700;margin-top:6px}
+    .small{font-size:13px;color:var(--muted)}
+    footer.small{margin-top:12px}
+    @media (max-width:820px){.card{grid-template-columns:1fr;}
+      .right{order:-1}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <main class="card" role="main">
+    <section>
+      <div class="brand">
+        <div class="logo">🔒</div>
+        <div>
+          <h1>We'll be back soon</h1>
+          <p class="lead">We're performing scheduled maintenance. Thanks for your patience — please stay tuned.</p>
+        </div>
+      </div>
+      <div class="meta">
+        <p><strong>What is happening?</strong> We're updating the site to bring you improvements and bug fixes.</p>
+        <p style="margin-top:8px;"><strong>Expected downtime:</strong> <span id="eta">a short period</span></p>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="location.reload()">Reload</button>
+          <button class="btn btn-muted" onclick="copySupport()">Copy support email</button>
+        </div>
+        <p class="small" style="margin-top:12px">If you need urgent support, email <a href="mailto:hygenicnexss@gmail.com" style="color:inherit;opacity:0.9">hygenicnexss@gmail.com</a>.</p>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="small">Estimated time until back online</div>
+      <div class="countdown" id="countdown">--:--:--</div>
+      <div class="small" id="status">Working on improvements...</div>
+      <footer class="small">Thank you for your patience.</footer>
+    </aside>
+  </main>
+
+  <script>
+    // ETA configuration
+    const ETA_ISO = null; // or e.g., '2025-10-30T20:00:00+05:30'
+    function pad(n){return n.toString().padStart(2,'0')}
+    function updateCountdown(){
+      const el = document.getElementById('countdown');
+      const etaEl = document.getElementById('eta');
+      if(!ETA_ISO){ el.textContent = '--:--:--'; etaEl.textContent = 'a short period'; return; }
+      const end = new Date(ETA_ISO);
+      const now = new Date();
+      const diff = end - now;
+      if(diff<=0){ el.textContent = '00:00:00'; document.getElementById('status').textContent = 'We should be back online — try reloading.'; return; }
+      const hrs = Math.floor(diff/36e5);
+      const mins = Math.floor((diff%36e5)/6e4);
+      const secs = Math.floor((diff%6e4)/1000);
+      el.textContent = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+      etaEl.textContent = end.toLocaleString();
+    }
+    setInterval(updateCountdown,1000); updateCountdown();
+
+    function copySupport(){
+      navigator.clipboard?.writeText('support@example.com').then(()=>{
+        const s=document.getElementById('status'); s.textContent='Support email copied to clipboard';
+        setTimeout(()=>s.textContent='Working on improvements...',2400);
+      }).catch(()=>{ alert('support@example.com'); });
+    }
+
+    // Secure-style animated background
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, particles;
+
+    function resize(){
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      particles = Array.from({length: 60}, ()=>({
+        x: Math.random()*width,
+        y: Math.random()*height,
+        vx: (Math.random()-0.5)*0.6,
+        vy: (Math.random()-0.5)*0.6
+      }));
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function draw(){
+      ctx.fillStyle = 'rgba(15,23,36,0.3)';
+      ctx.fillRect(0,0,width,height);
+
+      for(let p of particles){
+        p.x += p.vx; p.y += p.vy;
+        if(p.x<0||p.x>width) p.vx*=-1;
+        if(p.y<0||p.y>height) p.vy*=-1;
+      }
+
+      for(let i=0;i<particles.length;i++){
+        for(let j=i+1;j<particles.length;j++){
+          const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+          const dist = Math.sqrt(dx*dx+dy*dy);
+          if(dist<120){
+            ctx.strokeStyle = `rgba(110,231,183,${1-dist/120})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x,particles[i].y);
+            ctx.lineTo(particles[j].x,particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      ctx.fillStyle = '#6ee7b7';
+      for(let p of particles){
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,2,0,Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+</body>
+</html>
